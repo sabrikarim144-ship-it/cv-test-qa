@@ -301,6 +301,7 @@
 
     .topnav {
       display: flex;
+      align-items: center;
       gap: 24px;
     }
 
@@ -314,12 +315,38 @@
 
       color: var(--muted);
 
-      transition: color 0.25s ease;
+      transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
     }
 
 
     .topnav a:hover,
     .topnav a.active {
+      color: var(--accent);
+    }
+
+
+    .topnav a.nav-case-study {
+      padding: 6px 11px;
+      border: 1px solid var(--border-accent);
+      border-radius: 999px;
+      color: var(--accent);
+      background: rgba(214, 173, 98, 0.07);
+    }
+
+
+    .topnav a.nav-case-study:hover {
+      background: rgba(214, 173, 98, 0.15);
+      color: var(--accent-light);
+    }
+
+
+    body.light-mode .topnav a.nav-case-study {
+      background: rgba(164, 119, 46, 0.08);
+    }
+
+
+    body.light-mode .topnav a.nav-case-study:hover {
+      background: rgba(164, 119, 46, 0.16);
       color: var(--accent);
     }
 
@@ -512,7 +539,8 @@
       transition:
         transform 0.25s ease,
         background 0.25s ease,
-        border-color 0.25s ease;
+        border-color 0.25s ease,
+        color 0.25s ease;
     }
 
 
@@ -546,6 +574,33 @@
 
     .button-secondary:hover {
       border-color: var(--border-accent);
+      color: var(--accent);
+    }
+
+
+    .button-accent-outline {
+      border: 1px solid var(--border-accent);
+
+      color: var(--accent);
+
+      background: rgba(214, 173, 98, 0.06);
+    }
+
+
+    .button-accent-outline:hover {
+      background: rgba(214, 173, 98, 0.14);
+      border-color: var(--accent);
+      color: var(--accent-light);
+    }
+
+
+    body.light-mode .button-accent-outline {
+      background: rgba(164, 119, 46, 0.07);
+    }
+
+
+    body.light-mode .button-accent-outline:hover {
+      background: rgba(164, 119, 46, 0.14);
       color: var(--accent);
     }
 
@@ -599,7 +654,7 @@
     }
 
 
-        .profile-photo {
+    .profile-photo {
       width: 100%;
       max-width: 220px;
       aspect-ratio: 4 / 5;
@@ -614,7 +669,6 @@
 
       filter: grayscale(15%);
     }
-
 
 
     .card-label {
@@ -1059,6 +1113,39 @@
       color: var(--accent);
 
       border-color: var(--border-accent);
+    }
+
+
+    .case-study-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border-accent);
+      background: rgba(214, 173, 98, 0.06);
+      font-family: "DM Mono", monospace;
+      font-size: 11px;
+      color: var(--accent);
+      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    }
+
+
+    .case-study-cta:hover {
+      transform: translateX(3px);
+      background: rgba(214, 173, 98, 0.14);
+      border-color: var(--accent);
+    }
+
+
+    body.light-mode .case-study-cta {
+      background: rgba(164, 119, 46, 0.07);
+    }
+
+
+    body.light-mode .case-study-cta:hover {
+      background: rgba(164, 119, 46, 0.15);
     }
 
 
@@ -1709,7 +1796,8 @@
       .background-grid,
       .scroll-progress,
       .topbar,
-      .hero-actions {
+      .hero-actions,
+      .case-study-cta {
         display: none !important;
       }
 
@@ -1858,6 +1946,14 @@
 
 
         <a
+          href="etude-de-cas.html"
+          class="nav-case-study"
+        >
+          ✦ Étude de cas QA
+        </a>
+
+
+        <a
           href="#contact"
           class="nav-link"
         >
@@ -1939,6 +2035,14 @@
               class="button button-primary"
             >
               ↓ Télécharger mon CV
+            </a>
+
+
+            <a
+              href="etude-de-cas.html"
+              class="button button-accent-outline"
+            >
+              ✦ Étude de cas QA →
             </a>
 
 
@@ -2334,6 +2438,14 @@
                 </span>
 
               </div>
+
+
+              <a
+                href="etude-de-cas.html"
+                class="case-study-cta"
+              >
+                ✦ Explorer l'étude de cas interactive anonymisée (API, Anomalies, Playwright) →
+              </a>
 
             </div>
 
@@ -3244,7 +3356,7 @@
 
 
             <div class="level-card-value">
-             ISTQB AI Testing (CT-AI)· JavaScript · Automatisation
+              ISTQB AI Testing (CT-AI) · JavaScript · Automatisation
             </div>
 
           </div>
@@ -3640,11 +3752,10 @@
 
       navLinks.forEach((link) => {
 
-        const target =
-          link
-            .getAttribute("href")
-            .replace("#", "");
+        const href = link.getAttribute("href");
+        if (!href || !href.startsWith("#")) return;
 
+        const target = href.replace("#", "");
 
         link.classList.toggle(
           "active",
@@ -3682,10 +3793,11 @@
         "click",
         function(event) {
 
+          const href = this.getAttribute("href");
+          if (!href || !href.startsWith("#")) return;
+
           const target =
-            document.querySelector(
-              this.getAttribute("href")
-            );
+            document.querySelector(href);
 
 
           if (!target) {
