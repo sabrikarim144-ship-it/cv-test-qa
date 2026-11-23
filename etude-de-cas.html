@@ -28,7 +28,7 @@
 
   <style>
     /* ==========================================================================
-       DESIGN TOKENS — IDENTITÉ ÉDITORIALE KARIM SABRI (MODE SOMBRE PAR DÉFAUT)
+       DESIGN TOKENS — IDENTITÉ ÉDITORIALE KARIM SABRI (MODE SOMBRE)
        ========================================================================== */
     :root {
       --bg: #0c0c0d;
@@ -240,8 +240,8 @@
   <header class="ed-header fixed top-0 inset-x-0 z-40">
     <div class="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
 
-      <!-- Gauche : Monogramme KS + Nom -->
-      <a href="#hero" class="flex items-center gap-3 shrink-0 group">
+      <!-- Gauche : Monogramme KS + Nom (Ramène vers le CV principal) -->
+      <a href="index.html" class="flex items-center gap-3 shrink-0 group">
         <div class="w-9 h-9 rounded-md border border-accent flex items-center justify-center font-mono text-xs font-medium tracking-wider txt-accent transition-colors">
           KS
         </div>
@@ -270,9 +270,9 @@
         </a>
       </nav>
 
-      <!-- Droite : Retour au CV + Bouton Mode Clair / Sombre + Menu Mobile -->
+      <!-- Droite : Retour au CV (même onglet) + Bouton Mode Clair / Sombre + Menu Mobile -->
       <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-        <a href="https://sabrikarim144-ship-it.github.io/SITE-TESTCV/" target="_blank" rel="noopener noreferrer"
+        <a href="index.html"
            class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono btn-outline">
           <span>←</span>
           <span>Retour au CV</span>
@@ -281,7 +281,7 @@
         <button id="themeToggleBtn" type="button" aria-label="Basculer le thème clair ou sombre"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono btn-outline cursor-pointer">
           <span id="themeIcon" class="flex items-center" aria-hidden="true"></span>
-          <span id="themeLabel">Clair</span>
+          <span id="themeLabel">Sombre</span>
         </button>
 
         <button id="mobileMenuBtn" type="button" aria-label="Ouvrir le menu"
@@ -301,9 +301,8 @@
       <a href="#sec-03" class="mobile-link block py-2 txt-muted hover:txt-main"><span class="txt-accent mr-2">03</span>Playwright &amp; Pipeline CI/CD</a>
       <a href="#sec-04" class="mobile-link block py-2 txt-muted hover:txt-main"><span class="txt-accent mr-2">04</span>Plan de Remédiation</a>
       <div class="pt-2 border-t ed-divider">
-        <a href="https://sabrikarim144-ship-it.github.io/SITE-TESTCV/" target="_blank" rel="noopener noreferrer"
-           class="inline-flex items-center gap-1.5 py-1.5 txt-accent">
-          <span>←</span> Retour au CV en ligne
+        <a href="index.html" class="inline-flex items-center gap-1.5 py-1.5 txt-accent">
+          <span>←</span> Retour au CV principal
         </a>
       </div>
     </div>
@@ -742,7 +741,7 @@
         <div class="font-mono text-xs txt-muted">Étude de cas 100 % anonymisée — aucun nom client, domaine ou secret réel exposé.</div>
       </div>
       <div class="flex items-center gap-3">
-        <a href="https://sabrikarim144-ship-it.github.io/SITE-TESTCV/" target="_blank" rel="noopener noreferrer"
+        <a href="index.html"
            class="px-3.5 py-1.5 rounded-md text-xs font-mono btn-outline">
           ← Retour au CV
         </a>
@@ -810,7 +809,7 @@
       'use strict';
 
       /* ----------------------------------------------------------------------
-         1. GESTION DU THÈME CLAIR / SOMBRE (PERSISTANCE localStorage: ks-theme)
+         1. GESTION DU THÈME CLAIR / SOMBRE (SYNCHRONISÉ AVEC index.html : theme)
          ---------------------------------------------------------------------- */
       const themeToggleBtn = document.getElementById('themeToggleBtn');
       const themeIcon = document.getElementById('themeIcon');
@@ -832,17 +831,17 @@
       }
 
       try {
-        const savedTheme = localStorage.getItem('ks-theme');
-        applyTheme(savedTheme === 'light');
+        const savedTheme = localStorage.getItem('theme');
+        applyTheme(savedTheme !== 'dark');
       } catch (err) {
-        applyTheme(false);
+        applyTheme(true);
       }
 
       themeToggleBtn.addEventListener('click', () => {
         const nextIsLight = !document.body.classList.contains('light-mode');
         applyTheme(nextIsLight);
         try {
-          localStorage.setItem('ks-theme', nextIsLight ? 'light' : 'dark');
+          localStorage.setItem('theme', nextIsLight ? 'light' : 'dark');
         } catch (err) {
           /* Stockage indisponible */
         }
