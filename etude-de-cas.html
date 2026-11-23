@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Étude de Cas QA — Audit, Recette &amp; Automatisation | Karim Sabri</title>
+
+  <!-- Polices éditoriales exactes du site CV : Playfair Display, DM Sans & DM Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"DM Mono"', 'ui-monospace', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* ==========================================================================
+       DESIGN TOKENS — IDENTITÉ ÉDITORIALE KARIM SABRI (MODE SOMBRE PAR DÉFAUT)
+       ========================================================================== */
+    :root {
+      --bg: #0c0c0d;
+      --surface: #131315;
+      --surface-2: #19191c;
+      --header-bg: rgba(12, 12, 13, 0.84);
+      --border: rgba(247, 245, 242, 0.10);
+      --border-strong: rgba(247, 245, 242, 0.18);
+      --border-hover: rgba(200, 169, 110, 0.38);
+      --text: #f7f5f2;
+      --text-muted: #9e9b95;
+      --text-subtle: #6b6b6b;
+      --accent: #c8a96e;
+      --accent-line: #c8a96e;
+      --accent-soft: rgba(200, 169, 110, 0.10);
+
+      /* Couleurs sémantiques QA sobres */
+      --crit: #c94a4a;
+      --crit-soft: rgba(201, 74, 74, 0.12);
+      --maj: #d4943a;
+      --maj-soft: rgba(212, 148, 58, 0.12);
+      --ok: #4a9e6f;
+      --ok-soft: rgba(74, 158, 111, 0.12);
+      --min: #6b8cae;
+      --min-soft: rgba(107, 140, 174, 0.12);
+
+      --code-bg: #09090a;
+      --shadow-modal: 0 28px 70px rgba(0, 0, 0, 0.65);
+    }
+
+    /* ==========================================================================
+       MODE CLAIR — IVOIRE CHAUD & OR BRONZE
+       ========================================================================== */
+    body.light-mode {
+      --bg: #f7f5f2;
+      --surface: #ffffff;
+      --surface-2: #efece6;
+      --header-bg: rgba(247, 245, 242, 0.88);
+      --border: #e2dfd9;
+      --border-strong: #d3cfc7;
+      --border-hover: rgba(158, 126, 67, 0.48);
+      --text: #141414;
+      --text-muted: #6b6b6b;
+      --text-subtle: #8a867e;
+      --accent: #9e7e43;
+      --accent-line: #c8a96e;
+      --accent-soft: rgba(158, 126, 67, 0.10);
+
+      --crit: #b33636;
+      --crit-soft: rgba(179, 54, 54, 0.10);
+      --maj: #b5761f;
+      --maj-soft: rgba(181, 118, 31, 0.10);
+      --ok: #2f7d52;
+      --ok-soft: rgba(47, 125, 82, 0.10);
+      --min: #4e6f91;
+      --min-soft: rgba(78, 111, 145, 0.10);
+
+      --code-bg: #f1eee9;
+      --shadow-modal: 0 24px 60px rgba(20, 20, 20, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      transition: background-color 0.28s ease, color 0.28s ease;
+      overflow-x: hidden;
+    }
+
+    /* Utilitaires reliés aux variables CSS */
+    .ed-header {
+      background-color: var(--header-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      transition: background-color 0.28s ease, border-color 0.28s ease;
+    }
+
+    .ed-card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      transition: background-color 0.25s ease, border-color 0.22s ease, transform 0.2s ease;
+    }
+
+    .ed-card-hover:hover {
+      border-color: var(--border-hover);
+    }
+
+    .ed-surface-2 {
+      background-color: var(--surface-2);
+      border: 1px solid var(--border);
+      transition: background-color 0.25s ease, border-color 0.22s ease;
+    }
+
+    .ed-code {
+      background-color: var(--code-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+    }
+
+    .ed-divider {
+      border-color: var(--border);
+    }
+
+    .txt-main { color: var(--text); }
+    .txt-muted { color: var(--text-muted); }
+    .txt-subtle { color: var(--text-subtle); }
+    .txt-accent { color: var(--accent); }
+    .bg-accent-soft { background-color: var(--accent-soft); }
+    .border-accent { border-color: var(--accent-line); }
+
+    /* Boutons éditoriaux */
+    .btn-gold {
+      background-color: var(--accent);
+      color: #0c0c0d;
+      border: 1px solid var(--accent);
+      transition: opacity 0.2s ease, transform 0.15s ease;
+    }
+    body.light-mode .btn-gold {
+      color: #ffffff;
+    }
+    .btn-gold:hover {
+      opacity: 0.90;
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+      transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+    }
+    .btn-outline:hover {
+      border-color: var(--accent-line);
+      color: var(--accent);
+    }
+
+    .filter-pill {
+      background-color: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      transition: all 0.18s ease;
+    }
+    .filter-pill:hover {
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+    .filter-pill.active {
+      background-color: var(--accent-soft);
+      color: var(--accent);
+      border-color: var(--accent-line);
+    }
+
+    /* Badges sémantiques QA */
+    .badge-crit {
+      color: var(--crit);
+      background-color: var(--crit-soft);
+      border: 1px solid var(--crit);
+    }
+    .badge-maj {
+      color: var(--maj);
+      background-color: var(--maj-soft);
+      border: 1px solid var(--maj);
+    }
+    .badge-ok {
+      color: var(--ok);
+      background-color: var(--ok-soft);
+      border: 1px solid var(--ok);
+    }
+    .badge-min {
+      color: var(--min);
+      background-color: var(--min-soft);
+      border: 1px solid var(--min);
+    }
+
+    /* Modale flottante */
+    .modal-panel {
+      background-color: var(--surface);
+      border: 1px solid var(--border-strong);
+      box-shadow: var(--shadow-modal);
+      animation: modalFade 0.18s ease-out forwards;
+    }
+
+    @keyframes modalFade {
+      from { opacity: 0; transform: translateY(10px) scale(0.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Checkbox personnalisée sobre */
+    .qa-checkbox {
+      accent-color: var(--accent);
+    }
+
+    /* Scrollbar discrète */
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased">
+
+  <!-- ========================================================================
+       HEADER FIXE ÉDITORIAL (SIGNATURE IDENTIQUE AU SITE CV)
+       ======================================================================== -->
+  <header class="ed-header fixed top-0 inset-x-0 z-40">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
+
+      <!-- Gauche : Monogramme KS + Nom -->
+      <a href="#hero" class="flex items-center gap-3 shrink-0 group">
+        <div class="w-9 h-9 rounded-md border border-accent flex items-center justify-center font-mono text-xs font-medium tracking-wider txt-accent transition-colors">
+          KS
+        </div>
+        <div class="leading-none">
+          <div class="text-xs font-semibold tracking-[0.2em] uppercase txt-main">KARIM</div>
+          <div class="text-[11px] font-mono tracking-[0.22em] uppercase txt-muted mt-1">SABRI</div>
+        </div>
+      </a>
+
+      <!-- Centre : Navigation numérotée Desktop -->
+      <nav class="hidden lg:flex items-center gap-1 text-xs font-mono" aria-label="Navigation principale">
+        <a href="#sec-00" class="px-3 py-2 rounded-md txt-muted hover:txt-main transition-colors">
+          <span class="txt-accent mr-1">00</span>Vue d'ensemble
+        </a>
+        <a href="#sec-01" class="px-3 py-2 rounded-md txt-muted hover:txt-main transition-colors">
+          <span class="txt-accent mr-1">01</span>Anomalies
+        </a>
+        <a href="#sec-02" class="px-3 py-2 rounded-md txt-muted hover:txt-main transition-colors">
+          <span class="txt-accent mr-1">02</span>Lab API
+        </a>
+        <a href="#sec-03" class="px-3 py-2 rounded-md txt-muted hover:txt-main transition-colors">
+          <span class="txt-accent mr-1">03</span>Playwright &amp; CI
+        </a>
+        <a href="#sec-04" class="px-3 py-2 rounded-md txt-muted hover:txt-main transition-colors">
+          <span class="txt-accent mr-1">04</span>Remédiation
+        </a>
+      </nav>
+
+      <!-- Droite : Retour au CV + Bouton Mode Clair / Sombre + Menu Mobile -->
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <a href="https://sabrikarim144-ship-it.github.io/SITE-TESTCV/" target="_blank" rel="noopener noreferrer"
+           class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono btn-outline">
+          <span>←</span>
+          <span>Retour au CV</span>
+        </a>
+
+        <button id="themeToggleBtn" type="button" aria-label="Basculer le thème clair ou sombre"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono btn-outline cursor-pointer">
+          <span id="themeIcon" class="flex items-center" aria-hidden="true"></span>
+          <span id="themeLabel">Clair</span>
+        </button>
+
+        <button id="mobileMenuBtn" type="button" aria-label="Ouvrir le menu"
+                class="lg:hidden p-2 rounded-md btn-outline cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Menu Mobile -->
+    <div id="mobileMenu" class="hidden lg:hidden ed-card border-t-0 border-x-0 px-5 py-4 space-y-1.5 text-xs font-mono">
+      <a href="#sec-00" class="mobile-link block py-2 txt-muted hover:txt-main"><span class="txt-accent mr-2">00</span>Vue d'ensemble</a>
+      <a href="#sec-01" class="mobile-link block py-2 txt-muted hover:txt-main"><span class="txt-accent mr-2">01</span>Registre des Anomalies</a>
+      <a href="#sec-02" class="mobile-link block py-2 txt-muted hover:txt-main"><span class="txt-accent mr-2">02</span>Lab API &amp; Sécurité RBAC</a>
+      <a href="#sec-03" class="mobile-link block py-2 txt-muted hover:txt-main"><span class="txt-accent mr-2">03</span>Playwright &amp; Pipeline CI/CD</a>
+      <a href="#sec-04" class="mobile-link block py-2 txt-muted hover:txt-main"><span class="txt-accent mr-2">04</span>Plan de Remédiation</a>
+      <div class="pt-2 border-t ed-divider">
+        <a href="https://sabrikarim144-ship-it.github.io/SITE-TESTCV/" target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-1.5 py-1.5 txt-accent">
+          <span>←</span> Retour au CV en ligne
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       CONTENU PRINCIPAL
+       ======================================================================== -->
+  <main class="max-w-6xl mx-auto px-5 sm:px-8 pt-28 pb-24 space-y-24 sm:space-y-28">
+
+    <!-- ======================================================================
+         HERO ÉDITORIAL
+         ====================================================================== -->
+    <section id="hero" class="space-y-10">
+      <div class="max-w-3xl space-y-5">
+        <div class="flex flex-wrap items-center gap-2.5 text-[11px] sm:text-xs font-mono tracking-[0.14em] uppercase txt-accent">
+          <span>Étude de cas QA</span>
+          <span class="txt-subtle">·</span>
+          <span>Données anonymisées</span>
+          <span class="txt-subtle">·</span>
+          <span>ISTQB &amp; RNCP Niveau 5</span>
+        </div>
+
+        <h1 class="font-serif text-4xl sm:text-6xl font-semibold tracking-tight leading-[1.08] txt-main">
+          Auditer. Sécuriser. <span class="italic txt-accent font-normal">Automatiser.</span>
+        </h1>
+
+        <p class="text-base sm:text-lg leading-relaxed txt-muted max-w-2xl">
+          Restitution interactive d'une mission complète d'assurance qualité menée sur deux écosystèmes distincts (production &amp; pré-production) : audit statique <span class="txt-main">Shift-Left</span>, investigation <span class="txt-main">boîte noire &amp; boîte grise</span>, recette API / OWASP et suite de non-régression <span class="font-mono text-sm txt-main">Playwright / TypeScript</span>.
+        </p>
+
+        <div class="pt-2 flex flex-wrap items-center gap-3">
+          <a href="#sec-01" class="px-5 py-2.5 rounded-md text-sm font-medium btn-gold">
+            Explorer les anomalies
+          </a>
+          <a href="#sec-02" class="px-5 py-2.5 rounded-md text-sm font-medium btn-outline">
+            Tester le Lab API
+          </a>
+        </div>
+      </div>
+
+      <!-- Bandeau de 4 KPIs sobres (esprit éditorial du site CV) -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 border-y ed-divider divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)]">
+        <div class="py-6 sm:px-6 first:pl-0">
+          <div class="font-serif text-3xl sm:text-4xl font-semibold txt-main">02</div>
+          <div class="font-mono text-[11px] uppercase tracking-wider txt-accent mt-1.5">Écosystèmes audités</div>
+          <div class="text-xs txt-muted mt-1">Production &amp; Pré-production</div>
+        </div>
+
+        <div class="py-6 sm:px-6">
+          <div class="font-serif text-3xl sm:text-4xl font-semibold txt-main">17/17</div>
+          <div class="font-mono text-[11px] uppercase tracking-wider txt-accent mt-1.5">Scénarios API conformes</div>
+          <div class="text-xs txt-muted mt-1">BLL, RBAC, IDOR &amp; Paiements</div>
+        </div>
+
+        <div class="py-6 sm:px-6">
+          <div class="font-serif text-3xl sm:text-4xl font-semibold txt-main">14</div>
+          <div class="font-mono text-[11px] uppercase tracking-wider txt-accent mt-1.5">Anomalies qualifiées</div>
+          <div class="text-xs txt-muted mt-1">Cause racine &amp; correctifs</div>
+        </div>
+
+        <div class="py-6 sm:px-6 last:pr-0">
+          <div class="font-serif text-3xl sm:text-4xl font-semibold txt-main">&lt; 10s</div>
+          <div class="font-mono text-[11px] uppercase tracking-wider txt-accent mt-1.5">Non-régression E2E</div>
+          <div class="text-xs txt-muted mt-1">Contre ~12 min en manuel</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION 00 — ARCHITECTURE & MÉTHODOLOGIE
+         ====================================================================== -->
+    <section id="sec-00" class="scroll-mt-24 space-y-10">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b ed-divider pb-5">
+        <div>
+          <div class="font-mono text-xs tracking-[0.18em] uppercase txt-accent">00 — Architecture &amp; Méthodologie</div>
+          <h2 class="font-serif text-2xl sm:text-4xl font-semibold txt-main mt-2">Deux écosystèmes, une exigence commune</h2>
+        </div>
+        <div class="font-mono text-xs txt-muted">Confidentialité préservée · Périmètres anonymisés</div>
+      </div>
+
+      <!-- 2 Cartes Systèmes -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Système A -->
+        <article class="ed-card ed-card-hover rounded-lg p-6 sm:p-7 flex flex-col justify-between gap-6">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-mono text-xs uppercase tracking-wider px-2.5 py-1 rounded bg-accent-soft txt-accent border border-accent">Système A</span>
+              <span class="font-mono text-[11px] txt-muted">En production · Autonomie complète</span>
+            </div>
+
+            <div>
+              <h3 class="font-serif text-xl sm:text-2xl font-semibold txt-main">Portail Web &amp; CRM Institutionnel</h3>
+              <p class="text-sm txt-muted mt-2 leading-relaxed">
+                Audit d'un écosystème déjà exposé au public : vérification de la cohérence documentaire, contrôle de l'infrastructure, recette fonctionnelle multi-terminaux et sécurité OWASP.
+              </p>
+            </div>
+
+            <div class="flex flex-wrap gap-2 pt-1">
+              <span class="ed-surface-2 px-2.5 py-1 rounded text-[11px] font-mono txt-main">Python 3.11 / Django MVT</span>
+              <span class="ed-surface-2 px-2.5 py-1 rounded text-[11px] font-mono txt-main">uWSGI / HTTP/2.0</span>
+              <span class="ed-surface-2 px-2.5 py-1 rounded text-[11px] font-mono" style="color: var(--ok);">LCP 0,21s · CLS 0 · 5 ms</span>
+            </div>
+          </div>
+
+          <ul class="space-y-2.5 text-sm txt-muted border-t ed-divider pt-5">
+            <li class="flex items-start gap-2.5">
+              <span class="txt-accent font-mono text-xs mt-0.5">01</span>
+              <span><strong class="txt-main font-medium">Audit statique :</strong> confrontation manuel de maintenance vs configuration réelle (secrets, <span class="font-mono text-xs">PYTHONPATH</span>, WSGI).</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <span class="txt-accent font-mono text-xs mt-0.5">02</span>
+              <span><strong class="txt-main font-medium">Boîte grise :</strong> corrélation entre erreurs UI et journaux HTTP/2.0 pour isoler la cause applicative.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <span class="txt-accent font-mono text-xs mt-0.5">03</span>
+              <span><strong class="txt-main font-medium">Sécurité &amp; UX :</strong> Contenu Mixte HTTPS, validation anti-XSS, absence de Honeypot, responsive &amp; I18n.</span>
+            </li>
+          </ul>
+        </article>
+
+        <!-- Système B -->
+        <article class="ed-card ed-card-hover rounded-lg p-6 sm:p-7 flex flex-col justify-between gap-6">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-mono text-xs uppercase tracking-wider px-2.5 py-1 rounded bg-accent-soft txt-accent border border-accent">Système B</span>
+              <span class="font-mono text-[11px] txt-muted">Pré-production · Recette pré-MEP</span>
+            </div>
+
+            <div>
+              <h3 class="font-serif text-xl sm:text-2xl font-semibold txt-main">Plateforme Transactionnelle SaaS</h3>
+              <p class="text-sm txt-muted mt-2 leading-relaxed">
+                Validation amont d'une application métier gérant réservations, sessions, jauges de capacité, rôles utilisateurs et parcours de paiement avant ouverture au public.
+              </p>
+            </div>
+
+            <div class="flex flex-wrap gap-2 pt-1">
+              <span class="ed-surface-2 px-2.5 py-1 rounded text-[11px] font-mono txt-main">Spring Boot 3 / Java 17</span>
+              <span class="ed-surface-2 px-2.5 py-1 rounded text-[11px] font-mono txt-main">Spring Security 6 · JWT · RBAC</span>
+              <span class="ed-surface-2 px-2.5 py-1 rounded text-[11px] font-mono txt-main">Angular 17 / TypeScript</span>
+            </div>
+          </div>
+
+          <ul class="space-y-2.5 text-sm txt-muted border-t ed-divider pt-5">
+            <li class="flex items-start gap-2.5">
+              <span class="txt-accent font-mono text-xs mt-0.5">01</span>
+              <span><strong class="txt-main font-medium">Recette API REST :</strong> 17 scénarios Postman validant règles métier (BLL), limites de capacité, RBAC et IDOR.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <span class="txt-accent font-mono text-xs mt-0.5">02</span>
+              <span><strong class="txt-main font-medium">Audit SPA &amp; IAM :</strong> détection d'une désynchronisation Front-to-Back (404) et de 6 routes Angular manquantes.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <span class="txt-accent font-mono text-xs mt-0.5">03</span>
+              <span><strong class="txt-main font-medium">Automatisation E2E :</strong> transcription des anomalies en scripts Playwright/TypeScript et proposition CI/CD.</span>
+            </li>
+          </ul>
+        </article>
+      </div>
+
+      <!-- 3 Blocs Méthodologiques -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="ed-surface-2 rounded-lg p-5 space-y-2">
+          <div class="font-mono text-xs txt-accent uppercase tracking-wider">Bloc 1 · Analyse &amp; Shift-Left</div>
+          <h4 class="font-serif text-lg font-semibold txt-main">Concevoir avant d'exécuter</h4>
+          <p class="text-xs sm:text-sm txt-muted leading-relaxed">
+            Revue documentaire statique, cartographie des risques métier, stabilisation de l'environnement de recette et conception de cas nominaux, limites et sécurité.
+          </p>
+        </div>
+
+        <div class="ed-surface-2 rounded-lg p-5 space-y-2">
+          <div class="font-mono text-xs txt-accent uppercase tracking-wider">Bloc 2 · Boîte Noire &amp; Grise</div>
+          <h4 class="font-serif text-lg font-semibold txt-main">Isoler la cause racine</h4>
+          <p class="text-xs sm:text-sm txt-muted leading-relaxed">
+            Croisement systématique entre le comportement observé côté navigateur, les réponses HTTP Postman et les journaux serveur pour fournir des tickets directement exploitables.
+          </p>
+        </div>
+
+        <div class="ed-surface-2 rounded-lg p-5 space-y-2">
+          <div class="font-mono text-xs txt-accent uppercase tracking-wider">Bloc 3 · E2E &amp; CI/CD</div>
+          <h4 class="font-serif text-lg font-semibold txt-main">Verrouiller dans le temps</h4>
+          <p class="text-xs sm:text-sm txt-muted leading-relaxed">
+            Conversion des défauts majeurs en tests Playwright reproductibles avec baseline d'échec prouvée, rapport HTML automatique et workflow GitHub Actions.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION 01 — REGISTRE DES ANOMALIES (EXPLORATEUR + MODALE JIRA)
+         ====================================================================== -->
+    <section id="sec-01" class="scroll-mt-24 space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b ed-divider pb-5">
+        <div>
+          <div class="font-mono text-xs tracking-[0.18em] uppercase txt-accent">01 — Registre des Anomalies</div>
+          <h2 class="font-serif text-2xl sm:text-4xl font-semibold txt-main mt-2">Investigation &amp; Fiches d'Anomalies</h2>
+          <p class="text-sm txt-muted mt-1.5">Cliquez sur une fiche pour ouvrir le dossier technique anonymisé (symptôme, cause racine, extrait de preuve et correctif).</p>
+        </div>
+        <div class="font-mono text-xs px-3 py-1.5 rounded-md ed-surface-2 txt-muted self-start sm:self-auto">
+          Affichées : <strong id="anomalyCount" class="txt-accent">12</strong> / 12
+        </div>
+      </div>
+
+      <!-- Barre de Filtres -->
+      <div class="ed-card rounded-lg p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="font-mono text-[11px] uppercase tracking-wider txt-subtle mr-1">Système :</span>
+          <button type="button" class="filter-pill active sys-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer" data-sys="ALL">Tous</button>
+          <button type="button" class="filter-pill sys-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer" data-sys="SYSA">Système A</button>
+          <button type="button" class="filter-pill sys-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer" data-sys="SYSB">Système B</button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="font-mono text-[11px] uppercase tracking-wider txt-subtle mr-1">Sévérité :</span>
+          <button type="button" class="filter-pill active sev-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer" data-sev="ALL">Toutes</button>
+          <button type="button" class="filter-pill sev-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer" data-sev="CRITIQUE">Critique / Bloquant</button>
+          <button type="button" class="filter-pill sev-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer" data-sev="MAJEURE">Majeure</button>
+          <button type="button" class="filter-pill sev-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer" data-sev="MINEURE">Mineure</button>
+        </div>
+      </div>
+
+      <!-- Grille des 12 Anomalies -->
+      <div id="anomalyGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION 02 — LAB API & SÉCURITÉ RBAC (SIMULATEUR POSTMAN)
+         ====================================================================== -->
+    <section id="sec-02" class="scroll-mt-24 space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b ed-divider pb-5">
+        <div>
+          <div class="font-mono text-xs tracking-[0.18em] uppercase txt-accent">02 — Lab API &amp; Sécurité RBAC</div>
+          <h2 class="font-serif text-2xl sm:text-4xl font-semibold txt-main mt-2">Simulateur de Recette API REST</h2>
+          <p class="text-sm txt-muted mt-1.5">Changez le rôle JWT actif puis exécutez un scénario pour observer le filtrage Spring Security 6 et les réponses du <span class="font-mono text-xs txt-main">GlobalExceptionHandler</span>.</p>
+        </div>
+        <div class="font-mono text-xs txt-muted">Système B · Spring Boot 3</div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Colonne Gauche : Rôle JWT + Liste Scénarios -->
+        <div class="lg:col-span-5 ed-card rounded-lg p-5 space-y-5">
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-[11px] uppercase tracking-wider txt-subtle">Rôle simulé (JWT)</span>
+              <span id="jwtRoleIndicator" class="font-mono text-[11px] txt-accent">ROLE_CLIENT</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" class="filter-pill active role-btn py-2 rounded-md text-xs font-mono cursor-pointer" data-role="CLIENT">CLIENT</button>
+              <button type="button" class="filter-pill role-btn py-2 rounded-md text-xs font-mono cursor-pointer" data-role="MANAGER">MANAGER</button>
+              <button type="button" class="filter-pill role-btn py-2 rounded-md text-xs font-mono cursor-pointer" data-role="ADMIN">ADMIN</button>
+            </div>
+            <div class="ed-code rounded-md px-3 py-2 font-mono text-[11px] truncate">
+              <span class="txt-subtle">Authorization: </span><span id="jwtPreview" class="txt-accent">Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQ0xJRU5UIn0.sig_anon</span>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between font-mono text-[11px] uppercase tracking-wider txt-subtle pb-2 border-b ed-divider">
+              <span>Scénarios (7 clés / 17)</span>
+              <span style="color: var(--ok);">100% CONFORME</span>
+            </div>
+            <div id="apiList" class="space-y-2 max-h-[410px] overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+
+        <!-- Colonne Droite : Console Requête / Réponse -->
+        <div class="lg:col-span-7 ed-card rounded-lg p-5 sm:p-6 flex flex-col justify-between gap-5">
+          <div class="space-y-4">
+            <!-- Endpoint + Bouton Exécuter -->
+            <div class="flex flex-col sm:flex-row gap-2.5">
+              <div class="flex-1 ed-code rounded-md px-3.5 py-2.5 flex items-center gap-2.5 font-mono text-xs sm:text-sm overflow-x-auto">
+                <span id="apiMethod" class="px-2 py-0.5 rounded text-[11px] font-medium badge-maj">POST</span>
+                <span id="apiEndpoint" class="txt-main whitespace-nowrap">/api/bookings/reserve</span>
+              </div>
+              <button id="runApiBtn" type="button" class="px-5 py-2.5 rounded-md text-xs sm:text-sm font-medium btn-gold whitespace-nowrap cursor-pointer">
+                Exécuter la requête
+              </button>
+            </div>
+
+            <!-- Payload Envoyé -->
+            <div>
+              <div class="font-mono text-[11px] uppercase tracking-wider txt-subtle mb-1.5">Payload JSON envoyé</div>
+              <pre id="apiPayload" class="ed-code rounded-md p-3.5 font-mono text-xs leading-relaxed overflow-x-auto"></pre>
+            </div>
+
+            <!-- Réponse Serveur -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="font-mono text-[11px] uppercase tracking-wider txt-subtle">Réponse JSON · GlobalExceptionHandler</span>
+                <div id="apiStatusMeta" class="flex items-center gap-2 font-mono text-xs">
+                  <span class="txt-subtle">En attente</span>
+                </div>
+              </div>
+              <pre id="apiResponse" class="ed-code rounded-md p-3.5 font-mono text-xs leading-relaxed overflow-x-auto min-h-[128px]">// Cliquez sur "Exécuter la requête" pour simuler l'appel API.</pre>
+            </div>
+
+            <!-- Verdict QA -->
+            <div id="apiVerdict" class="hidden rounded-md p-3.5 text-xs sm:text-sm leading-relaxed ed-surface-2 border-l-2 border-accent"></div>
+          </div>
+
+          <div class="pt-4 border-t ed-divider flex flex-wrap items-center justify-between gap-2 text-xs font-mono txt-muted">
+            <span>Sécurité : zéro fuite de stacktrace Java vers le client</span>
+            <span class="txt-accent">Spring Security 6 · Bean Validation</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION 03 — AUTOMATISATION PLAYWRIGHT & PIPELINE CI/CD
+         ====================================================================== -->
+    <section id="sec-03" class="scroll-mt-24 space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b ed-divider pb-5">
+        <div>
+          <div class="font-mono text-xs tracking-[0.18em] uppercase txt-accent">03 — Automatisation Playwright &amp; CI/CD</div>
+          <h2 class="font-serif text-2xl sm:text-4xl font-semibold txt-main mt-2">De la détection manuelle à la non-régression</h2>
+          <p class="text-sm txt-muted mt-1.5">Boucle courte : un bug détecté une fois en recette manuelle devient un contrôle automatisé exécuté en moins de 10 secondes.</p>
+        </div>
+        <div class="font-mono text-xs txt-muted">Gain mesuré : ~12 min → &lt; 10s</div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Terminal Playwright -->
+        <div class="lg:col-span-6 ed-card rounded-lg overflow-hidden flex flex-col">
+          <div class="ed-surface-2 border-0 border-b ed-divider px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2 font-mono text-xs txt-muted">
+              <span class="w-2.5 h-2.5 rounded-full" style="background: var(--crit);"></span>
+              <span class="w-2.5 h-2.5 rounded-full" style="background: var(--maj);"></span>
+              <span class="w-2.5 h-2.5 rounded-full" style="background: var(--ok);"></span>
+              <span class="ml-2">playwright-runner</span>
+            </div>
+            <span id="pwRunBadge" class="font-mono text-[11px] txt-subtle">PRÊT</span>
+          </div>
+
+          <div class="p-5 flex-1 flex flex-col justify-between gap-4">
+            <div class="space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button id="runBaselineBtn" type="button" class="text-left p-3 rounded-md btn-outline cursor-pointer">
+                  <div class="font-mono text-xs font-medium" style="color: var(--crit);">Run #1 : Baseline</div>
+                  <div class="text-[11px] txt-muted mt-0.5">Avant correctifs · 3/3 Échec attendu</div>
+                </button>
+                <button id="runFixedBtn" type="button" class="text-left p-3 rounded-md btn-outline cursor-pointer">
+                  <div class="font-mono text-xs font-medium" style="color: var(--ok);">Run #2 : Post-Correctifs</div>
+                  <div class="text-[11px] txt-muted mt-0.5">Validation CI · 3/3 Succès</div>
+                </button>
+              </div>
+
+              <!-- Sortie Console -->
+              <div id="pwTerminal" class="ed-code rounded-md p-4 font-mono text-xs space-y-2 min-h-[225px] leading-relaxed">
+                <div class="txt-subtle">$ npx playwright test --reporter=list</div>
+                <div class="txt-muted">Lancez Run #1 (Baseline) ou Run #2 (Post-Correctifs) pour simuler l'exécution de la suite E2E.</div>
+              </div>
+            </div>
+
+            <div class="ed-surface-2 rounded-md p-3.5 text-xs txt-muted leading-relaxed">
+              <strong class="txt-main font-medium">Lecture QA :</strong> une baseline en échec (Run #1) prouve que les assertions interceptent réellement les anomalies avant correction, garantissant la fiabilité du passage au vert en CI (Run #2).
+            </div>
+          </div>
+        </div>
+
+        <!-- Visionneuse de code à onglets + Copier -->
+        <div class="lg:col-span-6 ed-card rounded-lg overflow-hidden flex flex-col">
+          <div class="ed-surface-2 border-0 border-b ed-divider px-3 pt-2.5 pb-2 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap gap-1 font-mono text-[11px]">
+              <button type="button" class="filter-pill active code-tab px-2.5 py-1.5 rounded cursor-pointer" data-file="footer">footer-links.spec.ts</button>
+              <button type="button" class="filter-pill code-tab px-2.5 py-1.5 rounded cursor-pointer" data-file="login">login-validation.spec.ts</button>
+              <button type="button" class="filter-pill code-tab px-2.5 py-1.5 rounded cursor-pointer" data-file="catalogue">catalogue-visual.spec.ts</button>
+              <button type="button" class="filter-pill code-tab px-2.5 py-1.5 rounded cursor-pointer" data-file="ci">github-actions.yml</button>
+            </div>
+            <button id="copyCodeBtn" type="button" class="px-2.5 py-1 rounded text-[11px] font-mono btn-outline cursor-pointer">
+              Copier
+            </button>
+          </div>
+          <div class="p-4 ed-code border-0 flex-1 overflow-x-auto">
+            <pre id="codeDisplay" class="font-mono text-xs leading-relaxed whitespace-pre"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         SECTION 04 — PLAN DE REMÉDIATION & INDICE DE RISQUE DYNAMIQUE
+         ====================================================================== -->
+    <section id="sec-04" class="scroll-mt-24 space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b ed-divider pb-5">
+        <div>
+          <div class="font-mono text-xs tracking-[0.18em] uppercase txt-accent">04 — Plan de Remédiation</div>
+          <h2 class="font-serif text-2xl sm:text-4xl font-semibold txt-main mt-2">Pilotage du Risque Résiduel</h2>
+          <p class="text-sm txt-muted mt-1.5">Cochez les actions correctives pour simuler en temps réel la levée des risques avant mise en production.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="checkAllRemBtn" type="button" class="px-3.5 py-1.5 rounded-md text-xs font-mono btn-outline cursor-pointer">Tout cocher</button>
+          <button id="resetRemBtn" type="button" class="px-3.5 py-1.5 rounded-md text-xs font-mono btn-outline cursor-pointer">Réinitialiser</button>
+        </div>
+      </div>
+
+      <!-- Jauge de Risque Résiduel -->
+      <div class="ed-card rounded-lg p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="font-mono text-[11px] uppercase tracking-wider txt-subtle">Indice de Risque Résiduel</div>
+            <div id="riskVerdictText" class="font-serif text-xl sm:text-2xl font-semibold mt-1" style="color: var(--crit);">
+              CRITIQUE — MISE EN PROD BLOQUÉE
+            </div>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span class="font-serif text-4xl font-semibold txt-main" id="riskPercent">100%</span>
+            <span class="font-mono text-xs txt-muted">risque</span>
+          </div>
+        </div>
+
+        <div class="w-full h-2.5 rounded-full ed-surface-2 overflow-hidden">
+          <div id="riskBar" class="h-full rounded-full transition-all duration-500" style="width: 100%; background-color: var(--crit);"></div>
+        </div>
+
+        <div class="flex justify-between font-mono text-[11px] txt-subtle">
+          <span>0% · Stabilisé (Prêt Prod)</span>
+          <span>Sous réserve</span>
+          <span>100% · Critique</span>
+        </div>
+      </div>
+
+      <!-- Checklist P1 / P2 / P3 -->
+      <div id="remediationGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-5"></div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================
+       FOOTER ÉDITORIAL
+       ======================================================================== -->
+  <footer class="border-t ed-divider">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+      <div class="space-y-1">
+        <div class="text-sm font-medium txt-main">Karim Sabri · Testeur QA Certifié ISTQB Foundation</div>
+        <div class="font-mono text-xs txt-muted">Étude de cas 100 % anonymisée — aucun nom client, domaine ou secret réel exposé.</div>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="https://sabrikarim144-ship-it.github.io/SITE-TESTCV/" target="_blank" rel="noopener noreferrer"
+           class="px-3.5 py-1.5 rounded-md text-xs font-mono btn-outline">
+          ← Retour au CV
+        </a>
+        <a href="#hero" class="px-3.5 py-1.5 rounded-md text-xs font-mono btn-outline">
+          ↑ Haut
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================
+       MODALE FLOTTANTE JIRA (ANOMALIE DÉTAILLÉE)
+       ======================================================================== -->
+  <div id="ticketModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-panel w-full max-w-2xl rounded-lg overflow-hidden max-h-[88vh] flex flex-col">
+      <!-- En-tête Modale -->
+      <div class="ed-surface-2 border-0 border-b ed-divider px-5 py-4 flex items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
+          <span id="modalId" class="px-2 py-0.5 rounded bg-accent-soft txt-accent border border-accent font-medium"></span>
+          <span id="modalSev" class="px-2 py-0.5 rounded font-medium"></span>
+          <span id="modalScope" class="px-2 py-0.5 rounded ed-card txt-muted"></span>
+        </div>
+        <button id="closeModalBtn" type="button" aria-label="Fermer la fenêtre" class="p-1.5 rounded-md btn-outline cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Corps Modale -->
+      <div class="p-5 sm:p-6 overflow-y-auto space-y-5 text-sm">
+        <div>
+          <div id="modalSystem" class="font-mono text-[11px] uppercase tracking-wider txt-subtle"></div>
+          <h3 id="modalTitle" class="font-serif text-xl sm:text-2xl font-semibold txt-main mt-1 leading-snug"></h3>
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="font-mono text-[11px] uppercase tracking-wider txt-accent">Symptôme observé</div>
+          <p id="modalSymptom" class="txt-muted leading-relaxed"></p>
+        </div>
+
+        <div class="ed-surface-2 rounded-md p-4 space-y-1.5 border-l-2 border-accent">
+          <div class="font-mono text-[11px] uppercase tracking-wider txt-accent">Analyse Boîte Grise · Root Cause</div>
+          <p id="modalRootCause" class="txt-main leading-relaxed"></p>
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="font-mono text-[11px] uppercase tracking-wider txt-subtle">Extrait technique anonymisé</div>
+          <pre id="modalProof" class="ed-code rounded-md p-3.5 font-mono text-xs leading-relaxed overflow-x-auto"></pre>
+        </div>
+
+        <div class="rounded-md p-4 space-y-1.5" style="background-color: var(--ok-soft); border: 1px solid var(--ok);">
+          <div class="font-mono text-[11px] uppercase tracking-wider" style="color: var(--ok);">Correctif recommandé</div>
+          <p id="modalFix" class="txt-main leading-relaxed"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       LOGIQUE APPLICATIVE (100 % SÛRE — RENDU VIA textContent)
+       ======================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* ----------------------------------------------------------------------
+         1. GESTION DU THÈME CLAIR / SOMBRE (PERSISTANCE localStorage: ks-theme)
+         ---------------------------------------------------------------------- */
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+      const themeIcon = document.getElementById('themeIcon');
+      const themeLabel = document.getElementById('themeLabel');
+
+      const sunSvg = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" stroke-width="1.8"/><path stroke-linecap="round" stroke-width="1.8" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41"/></svg>';
+      const moonSvg = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>';
+
+      function applyTheme(isLight) {
+        if (isLight) {
+          document.body.classList.add('light-mode');
+          themeIcon.innerHTML = moonSvg;
+          themeLabel.textContent = 'Sombre';
+        } else {
+          document.body.classList.remove('light-mode');
+          themeIcon.innerHTML = sunSvg;
+          themeLabel.textContent = 'Clair';
+        }
+      }
+
+      try {
+        const savedTheme = localStorage.getItem('ks-theme');
+        applyTheme(savedTheme === 'light');
+      } catch (err) {
+        applyTheme(false);
+      }
+
+      themeToggleBtn.addEventListener('click', () => {
+        const nextIsLight = !document.body.classList.contains('light-mode');
+        applyTheme(nextIsLight);
+        try {
+          localStorage.setItem('ks-theme', nextIsLight ? 'light' : 'dark');
+        } catch (err) {
+          /* Stockage indisponible */
+        }
+      });
+
+      /* Menu Mobile */
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      mobileMenuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+      document.querySelectorAll('.mobile-link').forEach((link) => {
+        link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+      });
+
+      /* ----------------------------------------------------------------------
+         2. REGISTRE DES 12 ANOMALIES & MODALE JIRA
+         ---------------------------------------------------------------------- */
+      const xssSample = '<scr' + 'ipt>alert("XSS")</scr' + 'ipt>';
+
+      const anomalies = [
+        {
+          id: 'ANM-ST-03',
+          severity: 'CRITIQUE',
+          sevLabel: 'CRITIQUE',
+          system: 'SYSA',
+          systemName: 'Système A · Portail Web & CRM (Production)',
+          scope: 'Infrastructure',
+          title: 'Clé secrète applicative (SECRET_KEY) exposée en clair',
+          summary: 'Exposition directe de la clé cryptographique Django sur le panneau d’administration.',
+          symptom: 'Lors de la revue statique de l’environnement d’hébergement, la SECRET_KEY de production apparaît lisible en clair dans l’interface de configuration.',
+          rootCause: 'Absence d’isolation des secrets dans un gestionnaire ou des variables d’environnement masquées. Une compromission exposerait les signatures de sessions, cookies et jetons CSRF.',
+          proof: '# Audit Statique (Shift-Left) — Configuration anonymisée\nDJANGO_SETTINGS_MODULE = "portal.settings"\nSECRET_KEY = "django-prod-********************[MASQUÉ]"\n# Risque : usurpation de session et falsification de jetons',
+          fix: 'Effectuer une rotation immédiate de la SECRET_KEY, supprimer son exposition en clair et la charger exclusivement via une variable d’environnement protégée.'
+        },
+        {
+          id: 'ANM-AUTH-01',
+          severity: 'CRITIQUE',
+          sevLabel: 'BLOQUANT',
+          system: 'SYSB',
+          systemName: 'Système B · Plateforme SaaS (Pré-production)',
+          scope: 'Auth Front-to-Back',
+          title: 'Désynchronisation des routes /login et /register (404)',
+          summary: 'Erreurs HTTP 404 systématiques côté SPA Angular alors que l’API répond sous Postman.',
+          symptom: 'Toute tentative d’inscription ou de connexion depuis l’interface Angular 17 échoue en 404 Not Found, bloquant totalement l’accès au tunnel transactionnel.',
+          rootCause: 'En boîte grise, les endpoints Spring Boot 3 (/api/auth/login et /register) répondent en 200/201 sous Postman. Le service HTTP Angular pointe vers une URL de base mal alignée avec le backend.',
+          proof: '// Requête observée côté SPA Angular\nPOST /api/auth/login    -> 404 Not Found\nPOST /api/auth/register -> 404 Not Found\n\n// Validation directe API (Postman)\nPOST http://api-interne:8080/api/auth/login -> 200 OK (JWT valide)',
+          fix: 'Réaligner l’URL de base dans environment.ts et la configuration proxy Angular sur la cartographie réelle du backend Spring Boot 3.'
+        },
+        {
+          id: 'ANM-FUN-03',
+          severity: 'MAJEURE',
+          sevLabel: 'MAJEURE',
+          system: 'SYSA',
+          systemName: 'Système A · Portail Web & CRM (Production)',
+          scope: 'CRM / Formulaire',
+          title: 'Crash applicatif NoReverseMatch et double bannière',
+          summary: 'Affichage simultané d’une bannière de succès et d’une erreur de résolution de route.',
+          symptom: 'Après soumission POST du formulaire de contact, deux bannières contradictoires apparaissent : « Message envoyé » et « Reverse for \'contact\' not found ».',
+          rootCause: 'Les journaux serveur HTTP/2.0 confirment un traitement POST en 200 OK (5.7 ms) : l’infrastructure est saine. Le défaut est applicatif dans views.py qui appelle redirect(\'contact\') au lieu de \'contact-us\'.',
+          proof: '# Extrait anonymisé des logs serveur HTTP/2.0\nportail-exemple.tld "GET /contact-us/ HTTP/2.0"  200  5.0ms\nportail-exemple.tld "POST /contact-us/ HTTP/2.0" 200  5.7ms\n\n# Exception Django\nNoReverseMatch: Reverse for \'contact\' not found.',
+          fix: 'Corriger redirect(\'contact\') en redirect(\'contact-us\') dans views.py et cloisonner proprement l’affichage des messages système dans le template.'
+        },
+        {
+          id: 'ANM-SECU-01',
+          severity: 'MAJEURE',
+          sevLabel: 'MAJEURE',
+          system: 'SYSA',
+          systemName: 'Système A · Portail Web & CRM (Production)',
+          scope: 'Sécurité OWASP',
+          title: 'Contenu Mixte (Mixed Content) dégradant le cadenas HTTPS',
+          summary: 'Ressources externes chargées en HTTP sur une page HTTPS (XSS vérifié conforme).',
+          symptom: 'Malgré la redirection SSL vers HTTPS, le cadenas de sécurité ne s’affiche pas sur les navigateurs. En parallèle, l’injection XSS testée est bien neutralisée par Django.',
+          rootCause: 'Des ressources tierces (styles, scripts ou médias) sont appelées en dur via http:// dans le code HTML, exposant les utilisateurs à une interception sur réseau non fiable.',
+          proof: 'Mixed Content: Page loaded over HTTPS requested insecure resource\n"http://cdn-externe.exemple.net/assets/theme.css"\n\n[Contrôle XSS complémentaire]\nPayload : ' + xssSample + ' -> Échappé en texte brut (CONFORME)',
+          fix: 'Migrer toutes les références externes vers HTTPS (ou les auto-héberger) et ajouter la directive CSP upgrade-insecure-requests.'
+        },
+        {
+          id: 'ANM-SECU-02',
+          severity: 'MAJEURE',
+          sevLabel: 'MAJEURE',
+          system: 'SYSA',
+          systemName: 'Système A · Portail Web & CRM (Production)',
+          scope: 'Sécurité Formulaire',
+          title: 'Absence de mécanisme anti-bot (Honeypot)',
+          summary: 'Formulaire public protégé par CSRF mais exposé au Spam Flooding automatisé.',
+          symptom: 'L’inspection DOM du formulaire de contact ne révèle aucun champ piège invisible ni limitation de débit contre les soumissions robotisées.',
+          rootCause: 'Seul le jeton csrfmiddlewaretoken est présent ; des scripts automatisés peuvent envoyer des requêtes POST en masse et saturer la boîte de réception.',
+          proof: '<!-- Inspection DOM DevTools -->\n<form class="contact-form" method="POST">\n  <input type="hidden" name="csrfmiddlewaretoken" value="[MASQUÉ]">\n  <!-- Aucun champ Honeypot détecté -->\n</form>',
+          fix: 'Implémenter un champ Honeypot invisible avec rejet silencieux côté serveur et activer un rate limiting sur l’endpoint POST.'
+        },
+        {
+          id: 'ANM-ROUTE-01',
+          severity: 'MAJEURE',
+          sevLabel: 'MAJEURE',
+          system: 'SYSB',
+          systemName: 'Système B · Plateforme SaaS (Pré-production)',
+          scope: 'Routage Angular',
+          title: '6 segments de routes non déclarés (Erreur NG04002)',
+          summary: 'Plusieurs entrées du menu principal déclenchent une exception de routage Angular.',
+          symptom: 'La navigation vers 6 sections institutionnelles ou métiers échoue silencieusement à l’écran en levant des erreurs console NG04002.',
+          rootCause: 'L’audit de app-routing.module.ts montre que ces 6 segments sont absents de la table de routage déclarée.',
+          proof: 'Error: NG04002: Cannot match any routes.\nSegments non déclarés : /agency, /event, /services,\n/talents, /partenariats, /contact',
+          fix: 'Déclarer les 6 segments dans app-routing.module.ts et ajouter une route wildcard (**) redirigeant vers une page 404 propre.'
+        },
+        {
+          id: 'ANM-FUN-01',
+          severity: 'MAJEURE',
+          sevLabel: 'MAJEURE',
+          system: 'SYSA',
+          systemName: 'Système A · Portail Web & CRM (Production)',
+          scope: 'Responsive Mobile',
+          title: 'Rupture du menu burger sur iPhone SE',
+          summary: 'Le menu ne se replie pas et se superpose au contenu principal en vue mobile.',
+          symptom: 'Sur petit écran mobile (375px), les liens de navigation s’étalent verticalement par-dessus les blocs textuels et multimédias, rendant les boutons inaccessibles.',
+          rootCause: 'Défaut de media-query flexbox sur l’état fermé du menu et absence de gestion appropriée du z-index.',
+          proof: 'Viewport : 375x667px (Mobile)\nConstat : .nav-links reste visible et chevauche .hero-content\nImpact : perte d’utilisabilité et illisibilité complète',
+          fix: 'Corriger la media-query mobile, masquer le tiroir hors état actif et appliquer un z-index supérieur avec fond opaque.'
+        },
+        {
+          id: 'ANM-UX-01',
+          severity: 'MAJEURE',
+          sevLabel: 'MAJEURE',
+          system: 'SYSB',
+          systemName: 'Système B · Plateforme SaaS (Pré-production)',
+          scope: 'Footer & Catalogue',
+          title: 'Ancres sociales relatives & bandeau partenaire tronqué',
+          summary: 'Liens footer pointant vers localhost:4200/twitter et absence de object-fit: cover.',
+          symptom: 'Les liens sociaux du pied de page déclenchent une navigation locale erronée, et le bandeau visuel de la modale « Demander un devis » est tronqué.',
+          rootCause: 'Attributs href relatifs au lieu d’URLs absolues externes, et conteneur image non contraint par object-fit: cover en CSS.',
+          proof: '<!-- Footer observé -->\n<a href="twitter">...</a>  --> localhost:4200/twitter\n\n/* Modale Devis */\n.partner-banner img { /* object-fit: cover manquant */ }',
+          fix: 'Basculer vers des URLs absolues https:// sécurisées, ajouter object-fit: cover sur le bandeau et couvrir les deux points par Playwright.'
+        },
+        {
+          id: 'ANM-FUN-04',
+          severity: 'MAJEURE',
+          sevLabel: 'MAJEURE',
+          system: 'SYSA',
+          systemName: 'Système A · Portail Web & CRM (Production)',
+          scope: 'I18n',
+          title: 'Omissions de traduction en mode anglais (EN)',
+          summary: 'Plusieurs libellés de navigation et sections restent en français après bascule EN.',
+          symptom: 'En version anglaise, des boutons clés du menu (« Accueil », « Partenariats académiques ») et des blocs de pages services ne sont pas traduits.',
+          rootCause: 'Chaînes codées en dur dans les templates HTML sans marqueurs de traduction Django ({% trans %}).',
+          proof: '<!-- Template actuel -->\n<a href="/">Accueil</a>\n\n<!-- Correction attendue -->\n{% load i18n %}\n<a href="/">{% trans "Accueil" %}</a>',
+          fix: 'Encapsuler l’ensemble des chaînes dans {% trans %}, compiler les catalogues .po/.mo et revalider la version EN.'
+        },
+        {
+          id: 'ANM-ST-01/02',
+          severity: 'MAJEURE',
+          sevLabel: 'MAJEURE',
+          system: 'SYSA',
+          systemName: 'Système A · Portail Web & CRM (Production)',
+          scope: 'Documentation',
+          title: 'Divergences PYTHONPATH et chemin WSGI',
+          summary: 'Écarts entre le manuel de maintenance et la configuration réelle du serveur.',
+          symptom: 'Toute reconstruction d’environnement basée sur la documentation officielle échoue au démarrage (ModuleNotFoundError / HTTP 500-503).',
+          rootCause: 'Omission du séparateur ":" dans PYTHONPATH et oubli du segment "www/" dans le chemin WSGI indiqué au manuel.',
+          proof: '# Manuel v1.0 (Errone)\nWSGI_PATH = "app/wsgi.py"\n\n# Serveur reel (Valide)\nWSGI_PATH = "www/app/wsgi.py"',
+          fix: 'Mettre à jour le manuel de maintenance avec les chemins et variables exacts vérifiés sur le serveur.'
+        },
+        {
+          id: 'ANM-VAL-01',
+          severity: 'MINEURE',
+          sevLabel: 'MINEURE',
+          system: 'SYSB',
+          systemName: 'Système B · Plateforme SaaS (Pré-production)',
+          scope: 'Validation Form',
+          title: 'Absence de Validators.email sur l’écran de connexion',
+          summary: 'Une chaîne sans "@" est acceptée sans alerte visuelle côté client.',
+          symptom: 'Saisir une chaîne invalide dans le champ Email maintient le bouton de connexion actif et déclenche des appels réseau superflus.',
+          rootCause: 'Absence du validateur Angular Validators.email sur le FormControl et omission de [disabled]="loginForm.invalid" sur le bouton submit.',
+          proof: '// Cas de test CT-05\nEntrée : "texteSansArobase"\nRésultat : bouton submit actif (attendu : désactivé)',
+          fix: 'Ajouter Validators.required et Validators.email dans LoginComponent et lier l’état disabled du bouton à la validité du formulaire.'
+        },
+        {
+          id: 'ANM-FUN-02',
+          severity: 'MINEURE',
+          sevLabel: 'MINEURE',
+          system: 'SYSA',
+          systemName: 'Système A · Portail Web & CRM (Production)',
+          scope: 'Responsive Tablette',
+          title: 'Puce parasite et fond asymétrique sur l’onglet Contact',
+          summary: 'Défaut d’alignement et absence de list-style: none observés sur tablette Android.',
+          symptom: 'En affichage tablette, le bouton Contact apparaît sur fond sombre différent du reste du menu, précédé d’une puce de liste et légèrement tronqué.',
+          rootCause: 'Règle CSS list-style: none non appliquée sur cet élément de liste et héritage de couleur de fond incohérent sur le breakpoint tablette.',
+          proof: 'Terminal : Tablette Android\nObservation : puce <li> visible + fond asymétrique sur le lien Contact',
+          fix: 'Réinitialiser list-style: none sur la navigation et harmoniser la couleur de fond et la hauteur de ligne sur le breakpoint tablette.'
+        }
+      ];
+
+      let currentSys = 'ALL';
+      let currentSev = 'ALL';
+
+      const anomalyGrid = document.getElementById('anomalyGrid');
+      const anomalyCount = document.getElementById('anomalyCount');
+
+      function getSevBadgeClass(sev) {
+        if (sev === 'CRITIQUE') return 'badge-crit';
+        if (sev === 'MAJEURE') return 'badge-maj';
+        return 'badge-min';
+      }
+
+      function renderAnomalies() {
+        const filtered = anomalies.filter((item) => {
+          const okSys = currentSys === 'ALL' || item.system === currentSys;
+          const okSev = currentSev === 'ALL' || item.severity === currentSev;
+          return okSys && okSev;
+        });
+
+        anomalyCount.textContent = String(filtered.length);
+        anomalyGrid.innerHTML = '';
+
+        filtered.forEach((item) => {
+          const card = document.createElement('button');
+          card.type = 'button';
+          card.className = 'ed-card ed-card-hover text-left rounded-lg p-5 flex flex-col justify-between gap-4 cursor-pointer group';
+
+          const top = document.createElement('div');
+          top.className = 'space-y-3 w-full';
+
+          const headerRow = document.createElement('div');
+          headerRow.className = 'flex items-center justify-between gap-2';
+
+          const idEl = document.createElement('span');
+          idEl.className = 'font-mono text-xs txt-accent';
+          idEl.textContent = item.id;
+
+          const sevEl = document.createElement('span');
+          sevEl.className = 'font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded ' + getSevBadgeClass(item.severity);
+          sevEl.textContent = item.sevLabel;
+
+          headerRow.appendChild(idEl);
+          headerRow.appendChild(sevEl);
+
+          const titleEl = document.createElement('h3');
+          titleEl.className = 'font-serif text-base sm:text-lg font-semibold txt-main leading-snug group-hover:txt-accent transition-colors';
+          titleEl.textContent = item.title;
+
+          const sumEl = document.createElement('p');
+          sumEl.className = 'text-xs txt-muted leading-relaxed';
+          sumEl.textContent = item.summary;
+
+          top.appendChild(headerRow);
+          top.appendChild(titleEl);
+          top.appendChild(sumEl);
+
+          const bottom = document.createElement('div');
+          bottom.className = 'w-full pt-3 border-t ed-divider flex items-center justify-between font-mono text-[11px]';
+
+          const meta = document.createElement('span');
+          meta.className = 'txt-subtle';
+          meta.textContent = (item.system === 'SYSA' ? 'Sys. A' : 'Sys. B') + ' · ' + item.scope;
+
+          const cta = document.createElement('span');
+          cta.className = 'txt-accent';
+          cta.textContent = 'Ouvrir →';
+
+          bottom.appendChild(meta);
+          bottom.appendChild(cta);
+
+          card.appendChild(top);
+          card.appendChild(bottom);
+          card.addEventListener('click', () => openTicketModal(item));
+
+          anomalyGrid.appendChild(card);
+        });
+      }
+
+      document.querySelectorAll('.sys-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.sys-btn').forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentSys = btn.dataset.sys;
+          renderAnomalies();
+        });
+      });
+
+      document.querySelectorAll('.sev-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.sev-btn').forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentSev = btn.dataset.sev;
+          renderAnomalies();
+        });
+      });
+
+      /* Modale Jira */
+      const ticketModal = document.getElementById('ticketModal');
+      const closeModalBtn = document.getElementById('closeModalBtn');
+
+      function openTicketModal(item) {
+        document.getElementById('modalId').textContent = item.id;
+        const mSev = document.getElementById('modalSev');
+        mSev.textContent = item.sevLabel;
+        mSev.className = 'px-2 py-0.5 rounded font-medium ' + getSevBadgeClass(item.severity);
+        document.getElementById('modalScope').textContent = item.scope;
+        document.getElementById('modalSystem').textContent = item.systemName;
+        document.getElementById('modalTitle').textContent = item.title;
+        document.getElementById('modalSymptom').textContent = item.symptom;
+        document.getElementById('modalRootCause').textContent = item.rootCause;
+        document.getElementById('modalProof').textContent = item.proof;
+        document.getElementById('modalFix').textContent = item.fix;
+
+        ticketModal.classList.remove('hidden');
+        ticketModal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeTicketModal() {
+        ticketModal.classList.add('hidden');
+        ticketModal.classList.remove('flex');
+        document.body.style.overflow = '';
+      }
+
+      closeModalBtn.addEventListener('click', closeTicketModal);
+      ticketModal.addEventListener('click', (e) => {
+        if (e.target === ticketModal) closeTicketModal();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !ticketModal.classList.contains('hidden')) closeTicketModal();
+      });
+
+      renderAnomalies();
+
+      /* ----------------------------------------------------------------------
+         3. LAB API & SÉCURITÉ RBAC (SIMULATEUR POSTMAN)
+         ---------------------------------------------------------------------- */
+      const roleTokens = {
+        CLIENT: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c3JfMTA0Iiwicm9sZSI6IkNMSUVOVCJ9.anon_sig_c',
+        MANAGER: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtZ3JfMDIiLCJyb2xlIjoiTUFOQUdFUiJ9.anon_sig_m',
+        ADMIN: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1fMDEiLCJyb2xlIjoiQURNSU4ifQ.anon_sig_a'
+      };
+
+      const apiScenarios = [
+        {
+          id: 'T-01',
+          name: 'Réservation nominale',
+          method: 'POST',
+          endpoint: '/api/bookings/reserve',
+          payload: {
+            prestationId: 9,
+            poleId: 2,
+            sessionId: 2,
+            nbPersonnes: 2,
+            dateSouhaitee: '2026-09-12T14:30:00',
+            typeReservation: 'SESSION'
+          },
+          evaluate: (role) => ({
+            code: '201 Created',
+            badge: 'badge-ok',
+            body: {
+              bookingId: 'BK-2026-0842',
+              statut: 'EN_ATTENTE_PAIEMENT',
+              placesReservees: 2,
+              capaciteRestante: 8,
+              executePar: role
+            },
+            verdict: 'CONFORME — Le scénario nominal valide le jeton JWT, contrôle la jauge disponible et enregistre la réservation.'
+          })
+        },
+        {
+          id: 'T-10',
+          name: 'Crash-test capacité (100 places)',
+          method: 'POST',
+          endpoint: '/api/bookings/reserve',
+          payload: {
+            prestationId: 9,
+            poleId: 2,
+            sessionId: 2,
+            nbPersonnes: 100,
+            dateSouhaitee: '2026-09-12T14:30:00',
+            typeReservation: 'SESSION'
+          },
+          evaluate: () => ({
+            code: '400 Bad Request',
+            badge: 'badge-maj',
+            body: {
+              timestamp: '2026-06-24T10:14:22Z',
+              status: 400,
+              error: 'SessionCapacityException',
+              message: 'Capacité insuffisante pour cette session (places restantes : 8).'
+            },
+            verdict: 'CONFORME — Règle métier BLL respectée : la sur-réservation est bloquée proprement via GlobalExceptionHandler.'
+          })
+        },
+        {
+          id: 'T-11',
+          name: 'Injection négative (nbPersonnes: -5)',
+          method: 'POST',
+          endpoint: '/api/bookings/reserve',
+          payload: {
+            prestationId: 9,
+            poleId: 2,
+            sessionId: 2,
+            nbPersonnes: -5,
+            dateSouhaitee: '2026-09-12T14:30:00',
+            typeReservation: 'SESSION'
+          },
+          evaluate: () => ({
+            code: '400 Bad Request',
+            badge: 'badge-maj',
+            body: {
+              timestamp: '2026-06-24T10:16:05Z',
+              status: 400,
+              error: 'MethodArgumentNotValidException',
+              violations: { nbPersonnes: 'Doit être supérieur ou égal à 1' }
+            },
+            verdict: 'CONFORME — Bean Validation rejette les valeurs négatives dès la désérialisation DTO.'
+          })
+        },
+        {
+          id: 'T-12',
+          name: 'Test IDOR sur dossier tiers (#42)',
+          method: 'DELETE',
+          endpoint: '/api/bookings/42',
+          payload: null,
+          evaluate: (role) => {
+            if (role === 'ADMIN') {
+              return {
+                code: '200 OK',
+                badge: 'badge-ok',
+                body: {
+                  bookingId: 42,
+                  statut: 'ANNULE',
+                  action: 'Suppression administrative autorisée (ROLE_ADMIN)'
+                },
+                verdict: 'CONFORME (RBAC) — En tant qu’ADMIN, la résiliation d’un dossier tiers est légitimement autorisée.'
+              };
+            }
+            return {
+              code: '403 Forbidden',
+              badge: 'badge-crit',
+              body: {
+                timestamp: '2026-06-24T10:19:41Z',
+                status: 403,
+                error: 'AccessDeniedException',
+                message: 'Accès refusé : le dossier #42 n’appartient pas au titulaire du jeton.'
+              },
+              verdict: 'CONFORME (OWASP IDOR) — Avec le rôle ' + role + ', le contrôle de propriété bloque l’accès au dossier d’un tiers.'
+            };
+          }
+        },
+        {
+          id: 'S-01',
+          name: 'Anachronisme temporel (date passée)',
+          method: 'POST',
+          endpoint: '/api/sessions',
+          payload: {
+            prestationId: 1,
+            dateDebut: '2023-01-10T09:00:00',
+            dateFin: '2023-01-12T18:00:00',
+            capaciteMax: 10,
+            statut: 'OUVERT'
+          },
+          evaluate: (role) => {
+            if (role === 'CLIENT') {
+              return {
+                code: '403 Forbidden',
+                badge: 'badge-crit',
+                body: {
+                  timestamp: '2026-06-24T10:22:01Z',
+                  status: 403,
+                  error: 'AccessDeniedException',
+                  message: 'Privilèges MANAGER ou ADMIN requis sur /api/sessions.'
+                },
+                verdict: 'CONFORME (RBAC) — Spring Security bloque l’appel avant même la validation de date pour un compte CLIENT.'
+              };
+            }
+            return {
+              code: '400 Bad Request',
+              badge: 'badge-maj',
+              body: {
+                timestamp: '2026-06-24T10:23:11Z',
+                status: 400,
+                error: 'InvalidDateRangeException',
+                message: 'Impossible de créer une session à une date antérieure à aujourd’hui.'
+              },
+              verdict: 'CONFORME — La validation métier interdit la création d’une session dans le passé.'
+            };
+          }
+        },
+        {
+          id: 'S-02',
+          name: 'Contrôle RBAC création de session',
+          method: 'POST',
+          endpoint: '/api/sessions',
+          payload: {
+            prestationId: 1,
+            dateDebut: '2026-07-01T09:00:00',
+            dateFin: '2026-07-03T18:00:00',
+            capaciteMax: 10,
+            statut: 'OUVERT'
+          },
+          evaluate: (role) => {
+            if (role === 'CLIENT') {
+              return {
+                code: '403 Forbidden',
+                badge: 'badge-crit',
+                body: {
+                  timestamp: '2026-06-24T10:25:09Z',
+                  status: 403,
+                  error: 'AccessDeniedException',
+                  message: 'Escalade de privilèges refusée (@PreAuthorize).'
+                },
+                verdict: 'CONFORME (RBAC) — Un compte CLIENT est strictement bloqué sur la création de sessions (403 Forbidden).'
+              };
+            }
+            return {
+              code: '201 Created',
+              badge: 'badge-ok',
+              body: {
+                sessionId: 18,
+                capaciteMax: 10,
+                statut: 'OUVERT',
+                creePar: role
+              },
+              verdict: 'CONFORME (RBAC) — Le rôle ' + role + ' dispose des droits requis : session créée (201 Created).'
+            };
+          }
+        },
+        {
+          id: 'P-01',
+          name: 'Soumission preuve de paiement',
+          method: 'POST',
+          endpoint: '/api/payments/proof',
+          payload: {
+            bookingId: 'BK-2026-0842',
+            referenceVirement: 'VIR-ANON-9921',
+            justificatif: 'recu_virement_anonymise.pdf'
+          },
+          evaluate: () => ({
+            code: '200 OK',
+            badge: 'badge-ok',
+            body: {
+              bookingId: 'BK-2026-0842',
+              ancienStatut: 'EN_ATTENTE_PAIEMENT',
+              nouveauStatut: 'EN_VERIFICATION',
+              message: 'Preuve enregistrée, en attente de validation staff.'
+            },
+            verdict: 'CONFORME — Transition d’état maîtrisée : le dossier passe en EN_VERIFICATION sans auto-confirmation.'
+          })
+        }
+      ];
+
+      let activeRole = 'CLIENT';
+      let activeScenario = apiScenarios[0];
+
+      const apiList = document.getElementById('apiList');
+      const jwtRoleIndicator = document.getElementById('jwtRoleIndicator');
+      const jwtPreview = document.getElementById('jwtPreview');
+      const apiMethod = document.getElementById('apiMethod');
+      const apiEndpoint = document.getElementById('apiEndpoint');
+      const apiPayload = document.getElementById('apiPayload');
+      const apiStatusMeta = document.getElementById('apiStatusMeta');
+      const apiResponse = document.getElementById('apiResponse');
+      const apiVerdict = document.getElementById('apiVerdict');
+      const runApiBtn = document.getElementById('runApiBtn');
+
+      function methodClass(method) {
+        if (method === 'DELETE') return 'badge-crit';
+        if (method === 'POST') return 'badge-maj';
+        return 'badge-ok';
+      }
+
+      function renderApiScenarios() {
+        apiList.innerHTML = '';
+        apiScenarios.forEach((sc) => {
+          const isSelected = sc.id === activeScenario.id;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'w-full text-left px-3 py-2.5 rounded-md border transition-all flex items-center justify-between gap-2 cursor-pointer ' + (
+            isSelected ? 'bg-accent-soft border-accent' : 'ed-surface-2 hover:border-[var(--border-hover)]'
+          );
+
+          const left = document.createElement('div');
+          left.className = 'min-w-0';
+
+          const line1 = document.createElement('div');
+          line1.className = 'flex items-center gap-2 font-mono text-[11px]';
+
+          const idTag = document.createElement('span');
+          idTag.className = 'txt-accent font-medium';
+          idTag.textContent = sc.id;
+
+          const mTag = document.createElement('span');
+          mTag.className = 'px-1.5 py-0.5 rounded text-[10px] ' + methodClass(sc.method);
+          mTag.textContent = sc.method;
+
+          line1.appendChild(idTag);
+          line1.appendChild(mTag);
+
+          const label = document.createElement('div');
+          label.className = 'text-xs txt-main mt-1 truncate';
+          label.textContent = sc.name;
+
+          left.appendChild(line1);
+          left.appendChild(label);
+
+          const arrow = document.createElement('span');
+          arrow.className = 'font-mono text-xs txt-subtle shrink-0';
+          arrow.textContent = isSelected ? '●' : '→';
+
+          btn.appendChild(left);
+          btn.appendChild(arrow);
+          btn.addEventListener('click', () => selectApiScenario(sc));
+          apiList.appendChild(btn);
+        });
+      }
+
+      function selectApiScenario(sc) {
+        activeScenario = sc;
+        renderApiScenarios();
+
+        apiMethod.textContent = sc.method;
+        apiMethod.className = 'px-2 py-0.5 rounded text-[11px] font-medium ' + methodClass(sc.method);
+        apiEndpoint.textContent = sc.endpoint;
+        apiPayload.textContent = sc.payload
+          ? JSON.stringify(sc.payload, null, 2)
+          : '// Requête DELETE sans corps JSON';
+
+        apiStatusMeta.innerHTML = '<span class="txt-subtle">Prêt</span>';
+        apiResponse.textContent = '// Cliquez sur "Exécuter la requête" pour simuler la réponse.';
+        apiVerdict.classList.add('hidden');
+      }
+
+      document.querySelectorAll('.role-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.role-btn').forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeRole = btn.dataset.role;
+          jwtRoleIndicator.textContent = 'ROLE_' + activeRole;
+          jwtPreview.textContent = roleTokens[activeRole];
+        });
+      });
+
+      runApiBtn.addEventListener('click', () => {
+        runApiBtn.disabled = true;
+        runApiBtn.style.opacity = '0.7';
+        apiStatusMeta.innerHTML = '<span class="txt-accent">Exécution...</span>';
+        apiResponse.textContent = '// Traitement par Spring Security 6 & GlobalExceptionHandler...';
+
+        const simulatedMs = Math.floor(18 + Math.random() * 27);
+        setTimeout(() => {
+          const result = activeScenario.evaluate(activeRole);
+          apiStatusMeta.innerHTML = '';
+
+          const statusBadge = document.createElement('span');
+          statusBadge.className = 'px-2 py-0.5 rounded text-[11px] font-medium ' + result.badge;
+          statusBadge.textContent = result.code;
+
+          const timeSpan = document.createElement('span');
+          timeSpan.className = 'txt-muted';
+          timeSpan.textContent = simulatedMs + ' ms';
+
+          apiStatusMeta.appendChild(statusBadge);
+          apiStatusMeta.appendChild(timeSpan);
+
+          apiResponse.textContent = JSON.stringify(result.body, null, 2);
+          apiVerdict.textContent = result.verdict;
+          apiVerdict.classList.remove('hidden');
+
+          runApiBtn.disabled = false;
+          runApiBtn.style.opacity = '1';
+        }, 160);
+      });
+
+      selectApiScenario(apiScenarios[0]);
+
+      /* ----------------------------------------------------------------------
+         4. AUTOMATISATION PLAYWRIGHT & CODE VIEWER + COPIER
+         ---------------------------------------------------------------------- */
+      const pwTerminal = document.getElementById('pwTerminal');
+      const pwRunBadge = document.getElementById('pwRunBadge');
+      const runBaselineBtn = document.getElementById('runBaselineBtn');
+      const runFixedBtn = document.getElementById('runFixedBtn');
+
+      const pwRuns = {
+        baseline: {
+          label: 'BASELINE · 3 ÉCHECS',
+          color: 'var(--crit)',
+          lines: [
+            { delay: 120, color: 'var(--text-muted)', text: 'Running 3 tests using 1 worker (Baseline — Avant correctifs)' },
+            { delay: 580, color: 'var(--crit)', text: '✘ [chromium] › footer-links.spec.ts (1.6s)\n  Expected href not containing "localhost:4200", received "http://localhost:4200/twitter"' },
+            { delay: 1120, color: 'var(--crit)', text: '✘ [chromium] › login-validation.spec.ts (1.4s)\n  Expected button[type="submit"] to be disabled, received enabled' },
+            { delay: 1680, color: 'var(--crit)', text: '✘ [chromium] › catalogue-visual.spec.ts (1.8s)\n  Assertion failed: bandeau partenaire tronqué dans le conteneur' },
+            { delay: 2050, color: 'var(--crit)', text: '─────────────────────────────────────────────────────────\n3 failed (4.8s) · Baseline validée : anomalies bien détectées.' }
+          ]
+        },
+        fixed: {
+          label: 'CI VERTE · 3/3 SUCCÈS',
+          color: 'var(--ok)',
+          lines: [
+            { delay: 120, color: 'var(--text-muted)', text: 'Running 3 tests using 1 worker (Post-Correctifs — Validation CI)' },
+            { delay: 520, color: 'var(--ok)', text: '✓ [chromium] › footer-links.spec.ts — Liens externes conformes (1.2s)' },
+            { delay: 980, color: 'var(--ok)', text: '✓ [chromium] › login-validation.spec.ts — Validation email active (1.1s)' },
+            { delay: 1450, color: 'var(--ok)', text: '✓ [chromium] › catalogue-visual.spec.ts — Bandeau visible & intègre (1.5s)' },
+            { delay: 1800, color: 'var(--ok)', text: '─────────────────────────────────────────────────────────\n3 passed (3.8s vs ~12 min en manuel) · Rapport HTML généré.' }
+          ]
+        }
+      };
+
+      let pwTimers = [];
+      function startPwRun(type) {
+        pwTimers.forEach((t) => clearTimeout(t));
+        pwTimers = [];
+
+        const run = pwRuns[type];
+        pwRunBadge.textContent = 'EXÉCUTION...';
+        pwRunBadge.style.color = 'var(--accent)';
+        pwTerminal.innerHTML = '';
+
+        const cmd = document.createElement('div');
+        cmd.className = 'txt-subtle';
+        cmd.textContent = '$ npx playwright test --reporter=list';
+        pwTerminal.appendChild(cmd);
+
+        run.lines.forEach((entry, idx) => {
+          const timer = setTimeout(() => {
+            const div = document.createElement('div');
+            div.style.color = entry.color;
+            div.className = 'whitespace-pre-wrap';
+            div.textContent = entry.text;
+            pwTerminal.appendChild(div);
+
+            if (idx === run.lines.length - 1) {
+              pwRunBadge.textContent = run.label;
+              pwRunBadge.style.color = run.color;
+            }
+          }, entry.delay);
+          pwTimers.push(timer);
+        });
+      }
+
+      runBaselineBtn.addEventListener('click', () => startPwRun('baseline'));
+      runFixedBtn.addEventListener('click', () => startPwRun('fixed'));
+
+      /* Onglets de code */
+      const codeSnippets = {
+        footer: [
+          "import { test, expect } from '@playwright/test';",
+          "",
+          "// Scénario 1 : Intégrité des liens externes du footer (ANM-UX-01)",
+          "test('Les liens sociaux pointent vers des URLs externes absolues', async ({ page }) => {",
+          "  await page.goto('http://localhost:4200/');",
+          "  const lienSocial = page.locator('footer a[aria-label=\"Twitter\"]');",
+          "  const href = await lienSocial.getAttribute('href');",
+          "",
+          "  await expect(href).not.toContain('localhost:4200');",
+          "  await expect(href).toMatch(/^https:\\/\\//);",
+          "});"
+        ].join('\n'),
+        login: [
+          "import { test, expect } from '@playwright/test';",
+          "",
+          "// Scénario 2 : Validation email côté client (ANM-VAL-01)",
+          "test('Le bouton de connexion reste désactivé avec un email invalide', async ({ page }) => {",
+          "  await page.goto('http://localhost:4200/login');",
+          "  const emailInput = page.locator('input[type=\"email\"]');",
+          "  const submitBtn = page.locator('button[type=\"submit\"]');",
+          "",
+          "  await emailInput.fill('chaineInvalideSansArobase');",
+          "  await expect(submitBtn).toBeDisabled();",
+          "});"
+        ].join('\n'),
+        catalogue: [
+          "import { test, expect } from '@playwright/test';",
+          "",
+          "// Scénario 3 : Intégrité visuelle du module Catalogue (ANM-UX-01)",
+          "test('Le bandeau partenaire reste visible dans la modale Devis', async ({ page }) => {",
+          "  await page.goto('http://localhost:4200/catalogue');",
+          "  await page.locator('button:has-text(\"Demander un devis\")').click();",
+          "",
+          "  const banner = page.locator('[data-testid=\"partner-banner\"]');",
+          "  await expect(banner).toBeVisible();",
+          "});"
+        ].join('\n'),
+        ci: [
+          "name: Non-Régression Playwright (Système B)",
+          "",
+          "on:",
+          "  push:",
+          "    branches: [main, develop]",
+          "  pull_request:",
+          "    branches: [main]",
+          "",
+          "jobs:",
+          "  e2e-tests:",
+          "    runs-on: ubuntu-latest",
+          "    steps:",
+          "      - uses: actions/checkout@v4",
+          "      - uses: actions/setup-node@v4",
+          "        with:",
+          "          node-version: 20",
+          "      - run: npm ci",
+          "      - run: npx playwright install --with-deps",
+          "      - run: npx playwright test",
+          "      - name: Publier le rapport HTML",
+          "        if: always()",
+          "        uses: actions/upload-artifact@v4",
+          "        with:",
+          "          name: playwright-report",
+          "          path: playwright-report/",
+          "          retention-days: 14"
+        ].join('\n')
+      };
+
+      let currentCodeKey = 'footer';
+      const codeDisplay = document.getElementById('codeDisplay');
+      const copyCodeBtn = document.getElementById('copyCodeBtn');
+
+      codeDisplay.textContent = codeSnippets[currentCodeKey];
+
+      document.querySelectorAll('.code-tab').forEach((tab) => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.code-tab').forEach((t) => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentCodeKey = tab.dataset.file;
+          codeDisplay.textContent = codeSnippets[currentCodeKey];
+          copyCodeBtn.textContent = 'Copier';
+        });
+      });
+
+      copyCodeBtn.addEventListener('click', () => {
+        const textarea = document.createElement('textarea');
+        textarea.value = codeSnippets[currentCodeKey];
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          copyCodeBtn.textContent = 'Copié ✓';
+          setTimeout(() => {
+            copyCodeBtn.textContent = 'Copier';
+          }, 1600);
+        } catch (err) {
+          copyCodeBtn.textContent = 'Erreur';
+        }
+        document.body.removeChild(textarea);
+      });
+
+      /* ----------------------------------------------------------------------
+         5. PLAN DE REMÉDIATION & JAUGE DE RISQUE RÉSIDUEL
+         ---------------------------------------------------------------------- */
+      const remediationData = [
+        {
+          priority: 'Priorité 1',
+          subtitle: 'Urgents & Bloquants',
+          badgeClass: 'badge-crit',
+          items: [
+            { weight: 22, label: 'Rotation de la SECRET_KEY Django & migration en variable d’environnement masquée (Sys. A).' },
+            { weight: 22, label: 'Réalignement des routes /login et /register Angular / Spring Boot (Sys. B).' },
+            { weight: 10, label: 'Correction redirect(\'contact-us\') dans views.py pour éliminer NoReverseMatch (Sys. A).' },
+            { weight: 8, label: 'Correctif media-query & z-index du menu burger mobile iPhone SE (Sys. A).' }
+          ]
+        },
+        {
+          priority: 'Priorité 2',
+          subtitle: 'Sécurité & UX',
+          badgeClass: 'badge-maj',
+          items: [
+            { weight: 8, label: 'Éradication du Contenu Mixte HTTPS + directive CSP upgrade-insecure-requests.' },
+            { weight: 7, label: 'Déclaration des 6 segments de routes manquants dans app-routing.module.ts.' },
+            { weight: 6, label: 'Ajout d’un champ Honeypot anti-bot et rate limiting sur le formulaire public.' },
+            { weight: 5, label: 'URLs sociales absolues, object-fit: cover et marqueurs I18n {% trans %}.' }
+          ]
+        },
+        {
+          priority: 'Priorité 3',
+          subtitle: 'Optimisations & CI',
+          badgeClass: 'badge-min',
+          items: [
+            { weight: 4, label: 'Mise à jour du manuel de maintenance (PYTHONPATH & chemin WSGI réels).' },
+            { weight: 4, label: 'Ajout de Validators.email côté Angular & documentation OpenAPI Spring Boot.' },
+            { weight: 4, label: 'Intégration de la suite Playwright dans le pipeline GitHub Actions.' }
+          ]
+        }
+      ];
+
+      const remediationGrid = document.getElementById('remediationGrid');
+      const riskVerdictText = document.getElementById('riskVerdictText');
+      const riskPercent = document.getElementById('riskPercent');
+      const riskBar = document.getElementById('riskBar');
+
+      function renderRemediation() {
+        remediationGrid.innerHTML = '';
+        remediationData.forEach((col) => {
+          const card = document.createElement('div');
+          card.className = 'ed-card rounded-lg p-5 flex flex-col gap-4';
+
+          const head = document.createElement('div');
+          head.className = 'flex items-center justify-between border-b ed-divider pb-3';
+
+          const badge = document.createElement('span');
+          badge.className = 'font-mono text-[11px] uppercase tracking-wider px-2 py-0.5 rounded ' + col.badgeClass;
+          badge.textContent = col.priority;
+
+          const sub = document.createElement('span');
+          sub.className = 'text-xs font-medium txt-main';
+          sub.textContent = col.subtitle;
+
+          head.appendChild(badge);
+          head.appendChild(sub);
+          card.appendChild(head);
+
+          const list = document.createElement('div');
+          list.className = 'space-y-2.5';
+
+          col.items.forEach((task) => {
+            const label = document.createElement('label');
+            label.className = 'ed-surface-2 rounded-md p-3 flex items-start gap-3 cursor-pointer hover:border-[var(--border-hover)] transition-colors';
+
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.className = 'rem-check qa-checkbox mt-0.5 w-4 h-4 cursor-pointer shrink-0';
+            cb.dataset.weight = String(task.weight);
+            cb.addEventListener('change', updateRiskGauge);
+
+            const span = document.createElement('span');
+            span.className = 'text-xs txt-muted leading-relaxed select-none';
+            span.textContent = task.label;
+
+            label.appendChild(cb);
+            label.appendChild(span);
+            list.appendChild(label);
+          });
+
+          card.appendChild(list);
+          remediationGrid.appendChild(card);
+        });
+      }
+
+      function updateRiskGauge() {
+        let solved = 0;
+        document.querySelectorAll('.rem-check:checked').forEach((cb) => {
+          solved += parseInt(cb.dataset.weight, 10);
+        });
+
+        const remaining = Math.max(0, 100 - solved);
+        riskPercent.textContent = remaining + '%';
+        riskBar.style.width = remaining + '%';
+
+        if (remaining === 0) {
+          riskVerdictText.textContent = 'STABILISÉ — PRÊT POUR PROD';
+          riskVerdictText.style.color = 'var(--ok)';
+          riskBar.style.backgroundColor = 'var(--ok)';
+        } else if (remaining <= 38) {
+          riskVerdictText.textContent = 'SOUS RÉSERVE — BLOQUANTS LEVÉS';
+          riskVerdictText.style.color = 'var(--maj)';
+          riskBar.style.backgroundColor = 'var(--maj)';
+        } else {
+          riskVerdictText.textContent = 'CRITIQUE — MISE EN PROD BLOQUÉE';
+          riskVerdictText.style.color = 'var(--crit)';
+          riskBar.style.backgroundColor = 'var(--crit)';
+        }
+      }
+
+      document.getElementById('checkAllRemBtn').addEventListener('click', () => {
+        document.querySelectorAll('.rem-check').forEach((cb) => { cb.checked = true; });
+        updateRiskGauge();
+      });
+
+      document.getElementById('resetRemBtn').addEventListener('click', () => {
+        document.querySelectorAll('.rem-check').forEach((cb) => { cb.checked = false; });
+        updateRiskGauge();
+      });
+
+      renderRemediation();
+      updateRiskGauge();
+    })();
+  </script>
+</body>
+</html>
